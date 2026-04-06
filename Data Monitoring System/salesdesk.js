@@ -8,6 +8,7 @@ let currentTemplate = null;
 let allTemplates = [];
 let localEntries = [];
 let dateSortAsc = true;
+let editingId = null;
 const categoryCache = {}; // Stores { template, entries } for every visited module
 
 window.onload = async function() {
@@ -103,7 +104,10 @@ function renderTable(entries) {
 
     body.innerHTML = entries.map(e => {
         const cells = currentTemplate.doc_columns.map(c => `<td>${e.content[c.column_name] || '-'}</td>`).join('');
-        return `<tr>${cells}<td><button class="del-btn" onclick="deleteEntry('${e.id}')">Delete</button></td></tr>`;
+        return `<tr>${cells}<td>
+        <button onclick="editEntry('${e.id}')">Edit</button>
+        <button class="del-btn" onclick="deleteEntry('${e.id}')">Delete</button>
+        </td></tr>`;
     }).join('');
 }
 
@@ -116,20 +120,46 @@ window.saveData = async function() {
         content[c.column_name] = val;
     });
 
-    const { data, error } = await supabaseClient.from('doc_entries').insert([{
-        template_id: currentTemplate.id,
-        content: content
-    }]).select();
+    // ✅ EDIT MODE
+    if (editingId) {
+        const { data, error } = await supabaseClient
+            .from('doc_entries')
+            .update({ content })
+            .eq('id', editingId)
+            .select();
 
-    if (!error) {
-        // Update Local State & Cache so we don't have to refetch from DB
-        localEntries.unshift(data[0]);
-        categoryCache[currentTemplate.name].entries = localEntries;
-        
-        renderTable(localEntries);
-        // Clear inputs
-        currentTemplate.doc_columns.forEach(c => document.getElementById(`input_${c.column_name}`).value = "");
+        if (!error) {
+            // update local state
+            const index = localEntries.findIndex(e => e.id === editingId);
+            if (index !== -1) {
+                localEntries[index] = data[0];
+            }
+
+            categoryCache[currentTemplate.name].entries = localEntries;
+            renderTable(localEntries);
+
+            editingId = null;
+            document.querySelector(".save-btn").innerText = "Save Entry";
+        }
+
+    } else {
+        // ✅ NORMAL INSERT
+        const { data, error } = await supabaseClient.from('doc_entries').insert([{
+            template_id: currentTemplate.id,
+            content: content
+        }]).select();
+
+        if (!error) {
+            localEntries.unshift(data[0]);
+            categoryCache[currentTemplate.name].entries = localEntries;
+            renderTable(localEntries);
+        }
     }
+
+    // clear inputs
+    currentTemplate.doc_columns.forEach(c => {
+        document.getElementById(`input_${c.column_name}`).value = "";
+    });
 };
 
 window.deleteEntry = async function(id) {
@@ -142,6 +172,27 @@ window.deleteEntry = async function(id) {
         categoryCache[currentTemplate.name].entries = localEntries;
         renderTable(localEntries);
     }
+};
+
+window.editEntry = function(id) {
+    const entry = localEntries.find(e => e.id === id);
+    if (!entry) return;
+
+    // ilagay sa form lahat ng values
+    currentTemplate.doc_columns.forEach(c => {
+        const input = document.getElementById(`input_${c.column_name}`);
+        if (input) {
+            input.value = entry.content[c.column_name] || "";
+        }
+    });
+
+    editingId = id;
+
+    // optional: scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // change button text
+    document.querySelector(".save-btn").innerText = "Update Entry";
 };
 
 /** * 6. SEARCH: Instance Search in Memory (No Lag)
@@ -218,4 +269,45 @@ window.sortByDate = function () {
     categoryCache[currentTemplate.name].entries = localEntries;
 
     renderTable(localEntries);
+};
+
+/** * 9. Export to excel
+ */
+window.exportToExcel = function () {
+    if (!currentTemplate || localEntries.length === 0) {
+        alert("No data to export.");
+        return;
+    }
+
+    // hanapin date column
+    const dateColumn = currentTemplate.doc_columns.find(c => c.column_type === 'date');
+
+    let sortedData = [...localEntries];
+
+    if (dateColumn) {
+        const colName = dateColumn.column_name;
+
+        sortedData.sort((a, b) => {
+            const dateA = new Date(a.content[colName] || 0);
+            const dateB = new Date(b.content[colName] || 0);
+            return dateA - dateB; // always ascending sa export
+        });
+    }
+
+    // convert to flat JSON
+    const formatted = sortedData.map(e => {
+        let obj = {};
+        currentTemplate.doc_columns.forEach(c => {
+            obj[c.column_name] = e.content[c.column_name] || '';
+        });
+        return obj;
+    });
+
+    // create worksheet
+    const ws = XLSX.utils.json_to_sheet(formatted);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Data");
+
+    // download
+    XLSX.writeFile(wb, `${currentTemplate.name}.xlsx`);
 };
