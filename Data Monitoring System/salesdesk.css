@@ -1,78 +1,125 @@
-body {
-    font-family: Arial;
-    background: #f4f6f9;
-    margin: 0;
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
 }
 
+body {
+    margin: 0;
+    background: #f5f7fb;
+}
+
+/* LAYOUT */
 .container {
     padding: 20px;
+    max-width: 1200px;
+    margin: auto;
 }
 
-/* FORM */
-.form {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+.header {
     margin-bottom: 20px;
 }
 
-.form input {
-    padding: 8px;
+/* CARDS */
+.card {
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
 }
 
-.form button {
-    grid-column: span 4;
-    padding: 10px;
-    background: #4CAF50;
-    color: white;
+/* ADMIN GRID */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+/* ROW (input + select + button) */
+.row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* CONTROLS */
+.controls {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* FORM GRID */
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+}
+
+input, select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+/* BUTTONS */
+button {
+    padding: 8px 12px;
     border: none;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
     cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #1e4ed8;
+}
+
+.save-btn {
+    grid-column: 1 / -1;
+    background: #16a34a;
+}
+
+.save-btn:hover {
+    background: #15803d;
+}
+
+.del-btn {
+    background: #dc2626;
+}
+
+.del-btn:hover {
+    background: #b91c1c;
 }
 
 /* TABLE */
+.table-wrapper {
+    overflow-x: auto;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
 }
 
 th {
-    background: #1f2a40;
+    background: #1f2937;
     color: white;
 }
 
 th, td {
     padding: 10px;
+    border-bottom: 1px solid #eee;
     text-align: left;
 }
 
-tr:nth-child(even) {
-    background: #f2f2f2;
-}
-
-button.delete {
-    background: red;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-button.edit
-{
-    background: blue;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-.controls {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.controls input, .controls select, .controls button {
-    padding: 8px;
+tr:hover {
+    background: #f9fafb;
 }

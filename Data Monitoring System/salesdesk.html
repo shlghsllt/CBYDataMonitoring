@@ -3,24 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Sales System</title>
+    <title>Sales Desk</title>
     <link rel="stylesheet" href="salesdesk.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
 <div class="container">
-    <h1>Department Management System</h1>
 
-    <div class="admin-grid">
-        <div class="admin-card">
-            <h3>1. Create New Category</h3>
-            <input type="text" id="newCategoryName" placeholder="e.g., Rejected Items">
-            <button onclick="createNewCategory()">Create Category</button>
+    <header class="header">
+        <h1>Sales Desk</h1>
+    </header>
+
+    <!-- ADMIN PANEL -->
+    <section class="admin-grid">
+        <div class="card">
+            <h3>Create Category</h3>
+            <input type="text" id="newCategoryName" placeholder="e.g. Rejected Items">
+            <button onclick="createNewCategory()">Create</button>
         </div>
 
-        <div class="admin-card">
-            <h3>2. Add Column to <span id="activeCategoryName">...</span></h3>
+        <div class="card">
+            <h3>Add Column (<span id="activeCategoryName">...</span>)</h3>
             <div class="row">
                 <input type="text" id="newColumnName" placeholder="Column Name">
                 <select id="newColumnType">
@@ -28,33 +32,36 @@
                     <option value="number">Number</option>
                     <option value="date">Date</option>
                 </select>
-                <button onclick="addColumnToActive()">Add Column</button>
+                <button onclick="addColumnToActive()">Add</button>
             </div>
         </div>
-    </div>
+    </section>
 
-    <hr>
+    <!-- CONTROLS -->
+     <h3><br>Select Category</h3>
+    <section class="controls">
+        <select id="categoryDropdown" onchange="switchCategory(this.value)"></select>
+        <input type="text" id="search" placeholder="Search..." oninput="searchData()">
+        <button onclick="sortByDate()">Sort by Date</button>
+        <button onclick="exportToExcel()">Export Excel</button>
+    </section>
 
-    <div class="main-controls">
-        <div class="selector">
-            <label>Current Category:</label>
-            <select id="categoryDropdown" onchange="switchCategory(this.value)"></select>
-        </div>
-        <input type="text" id="search" placeholder="Search records..." oninput="searchData()">
-    </div>
-
-    <div class="form-section">
+    <!-- FORM -->
+    <section class="card">
         <h3>Entry Form</h3>
-        <div id="dynamicForm" class="grid-form">
-            </div>
-    </div>
+        <div id="dynamicForm" class="grid-form"></div>
+    </section>
 
-    <div class="table-section">
-        <table id="mainTable">
-            <thead id="tableHeaders"></thead>
-            <tbody id="tableData"></tbody>
-        </table>
-    </div>
+    <!-- TABLE -->
+    <section class="card">
+        <div class="table-wrapper">
+            <table id="mainTable">
+                <thead id="tableHeaders"></thead>
+                <tbody id="tableData"></tbody>
+            </table>
+        </div>
+    </section>
+
 </div>
 
 <script type="module" src="salesdesk.js"></script>

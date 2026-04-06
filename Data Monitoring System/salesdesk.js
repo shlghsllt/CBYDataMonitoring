@@ -7,6 +7,7 @@ const supabaseClient = createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey
 let currentTemplate = null;
 let allTemplates = [];
 let localEntries = [];
+let dateSortAsc = true;
 const categoryCache = {}; // Stores { template, entries } for every visited module
 
 window.onload = async function() {
@@ -186,4 +187,35 @@ window.addColumnToActive = async function() {
         document.getElementById('newColumnName').value = "";
         await switchCategory(currentTemplate.name); 
     }
+};
+
+/** * 8. Sort by date function
+ */
+window.sortByDate = function () {
+    if (!currentTemplate) return;
+
+    // hanapin yung date column
+    const dateColumn = currentTemplate.doc_columns.find(c => c.column_type === 'date');
+
+    if (!dateColumn) {
+        alert("No date column found in this category.");
+        return;
+    }
+
+    const colName = dateColumn.column_name;
+
+    localEntries.sort((a, b) => {
+        const dateA = new Date(a.content[colName] || 0);
+        const dateB = new Date(b.content[colName] || 0);
+
+        return dateSortAsc ? dateA - dateB : dateB - dateA;
+    });
+
+    // toggle asc/desc
+    dateSortAsc = !dateSortAsc;
+
+    // update cache
+    categoryCache[currentTemplate.name].entries = localEntries;
+
+    renderTable(localEntries);
 };
