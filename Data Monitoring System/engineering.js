@@ -12,9 +12,33 @@ const USE_SUPABASE = false;
 // ================================
 const LS_KEY = "engineering_app"; // 👉 changed only
 
-let db = JSON.parse(localStorage.getItem(LS_KEY)) || {
-    categories: []
-};
+let db = JSON.parse(localStorage.getItem(LS_KEY));
+
+if (!db) {
+    db = {
+        categories: [
+            {
+                name: "Inventory", 
+                columns: [
+                    { name: "BY", type: "text" },
+                    { name: "FACILITY / EQUIPMENTS", type: "text" },
+                    { name: "CAPACITY / SPECIFICATION", type: "text" },
+                    { name: "CATEGORY", type: "text" },
+                    { name: "QTY", type: "text" },
+                    { name: "UOM", type: "text" },
+                    { name: "LOCATION", type: "text" },
+                    { name: "DATE PURCHASED", type: "date" },
+                    { name: "OWNER", type: "text" },
+                    { name: "STATUS", type: "text" },
+                    { name: "REMARKS", type: "text" }
+                ],
+                entries: []
+            }
+        ]
+    };
+
+    localStorage.setItem(LS_KEY, JSON.stringify(db));
+}
 
 let currentCategory = null;
 let editingId = null;
@@ -78,6 +102,12 @@ window.createCategory = function () {
 };
 
 window.deleteCategory = function (name) {
+
+    if (name === "Inventory") {
+        alert("This category cannot be deleted.");
+        return;
+    }
+
     if (!confirm(`Delete "${name}"? All data will be lost.`)) return;
 
     db.categories = db.categories.filter(c => c.name !== name);
