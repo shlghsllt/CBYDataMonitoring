@@ -8,6 +8,7 @@ let currentTemplate = null;
 let allTemplates = [];
 let localEntries = [];
 let dateSortAsc = true;
+let editingId = null;
 const categoryCache = {}; // Stores { template, entries } for every visited module
 
 window.currentTemplate = currentTemplate;
@@ -291,7 +292,10 @@ function renderTable(entries) {
 
     body.innerHTML = entries.map(e => {
         const cells = currentTemplate.doc_columns.map(c => `<td>${e.content[c.column_name] || '-'}</td>`).join('');
-        return `<tr>${cells}<td><button class="del-btn" onclick="deleteEntry('${e.id}')">Delete</button></td></tr>`;
+        return `<tr>${cells}<td>
+        <button onclick="editEntry('${e.id}')">Edit</button>
+        <button class="del-btn" onclick="deleteEntry('${e.id}')">Delete</button>
+        </td></tr>`;
     }).join('');
 }
 
@@ -338,6 +342,11 @@ window.saveData = async function() {
     } else {
         alert("Error saving data: " + (error?.message || "Unknown error"));
     }
+
+    // clear inputs
+    currentTemplate.doc_columns.forEach(c => {
+        document.getElementById(`input_${c.column_name}`).value = "";
+    });
 };
 
 window.deleteEntry = async function(id) {
