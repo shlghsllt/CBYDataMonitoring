@@ -10,58 +10,81 @@
 <body>
 
 <div class="container">
-
     <header class="header">
         <h1>Sales Desk</h1>
+        <button class="add-cat-btn" onclick="openModal()">+ New Category</button>
     </header>
 
-    <!-- ADMIN PANEL -->
-    <section class="admin-grid">
-        <div class="card">
-            <h3>Create Category</h3>
-            <input type="text" id="newCategoryName" placeholder="e.g. Rejected Items">
-            <button onclick="createNewCategory()">Create</button>
-        </div>
-
-        <div class="card">
-            <h3>Add Column (<span id="activeCategoryName">...</span>)</h3>
-            <div class="row">
-                <input type="text" id="newColumnName" placeholder="Column Name">
-                <select id="newColumnType">
-                    <option value="text">Text</option>
-                    <option value="number">Number</option>
-                    <option value="date">Date</option>
-                </select>
-                <button onclick="addColumnToActive()">Add</button>
+    <h3>Select Category</h3>
+    <div class="category-nav-wrapper">
+        <div id="categoryCards" class="category-scroll-container">
             </div>
+    </div>
+
+    <div id="moduleWorkspace" style="display: none;">
+        
+        <section class="controls">
+            <div class="action-bar">
+                
+                <input type="text" id="search" placeholder="Search..." oninput="searchData()">
+                <button onclick="sortByDate()">Sort by Date</button>
+                <button onclick="exportToExcel()">Export Excel</button>
+                <button class="add-cat-btn" onclick="openColumnModal()">+ Add Column</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h3>Entry Form</h3>
+            <div id="dynamicForm" class="grid-form">
+                </div>
+        </section>
+
+        <section class="card">
+            <div class="table-wrapper">
+                <table id="mainTable">
+                    <thead id="tableHeaders"></thead>
+                    <tbody id="tableData"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3>Create New Category</h3>
+        <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+            Enter a name for the new module (e.g., Warehouse, Logistics).
+        </p>
+        <input type="text" id="newCategoryName" placeholder="Category Name" style="width: 100%; margin-bottom: 20px;">
+        <div class="modal-actions">
+            <button class="cancel-btn" onclick="closeModal()">Cancel</button>
+            <button class="confirm-btn" onclick="createNewCategory()">Create Category</button>
         </div>
-    </section>
+    </div>
+</div>
 
-    <!-- CONTROLS -->
-     <h3><br>Select Category</h3>
-    <section class="controls">
-        <select id="categoryDropdown" onchange="switchCategory(this.value)"></select>
-        <input type="text" id="search" placeholder="Search..." oninput="searchData()">
-        <button onclick="sortByDate()">Sort by Date</button>
-        <button onclick="exportToExcel()">Export Excel</button>
-    </section>
-
-    <!-- FORM -->
-    <section class="card">
-        <h3>Entry Form</h3>
-        <div id="dynamicForm" class="grid-form"></div>
-    </section>
-
-    <!-- TABLE -->
-    <section class="card">
-        <div class="table-wrapper">
-            <table id="mainTable">
-                <thead id="tableHeaders"></thead>
-                <tbody id="tableData"></tbody>
-            </table>
+<div id="columnModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeColumnModal()">&times;</span>
+        <h3>Add Column to (<span id="activeCategoryName">...</span>)</h3>
+        <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
+            Define a new data field for this category.
+        </p>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="newColumnName" placeholder="Column Name" style="flex: 1;">
+            <select id="newColumnType" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="date">Date</option>
+            </select>
         </div>
-    </section>
-
+        <div class="modal-actions">
+            <button class="cancel-btn" onclick="closeColumnModal()">Cancel</button>
+            <button class="confirm-btn" onclick="addColumnToActive()">Add Column</button>
+        </div>
+    </div>
 </div>
 
 <script type="module" src="salesdesk.js"></script>

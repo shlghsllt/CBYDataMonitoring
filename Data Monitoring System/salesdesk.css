@@ -42,12 +42,7 @@ body {
     flex-wrap: wrap;
 }
 
-/* CONTROLS */
-.controls {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-}
+
 
 /* FORM GRID */
 .grid-form {
@@ -122,4 +117,192 @@ th, td {
 
 tr:hover {
     background: #f9fafb;
+}
+/* ========================================= */
+/* PATCHED CSS FOR CONTROLS AND CARDS */
+/* ========================================= */
+
+/* 1. Update the main controls area. Fix alignment issues. */
+.controls {
+    display: flex;
+    gap: 15px; /* Use consistent gap */
+    margin: 20px 0;
+    /* PATCH FIX: Stop elements from stretching vertically to match card height */
+    align-items: center; 
+    width: 100%;
+    /* Allow the whole control area to side-scroll if required */
+    overflow-x: auto; 
+    padding-bottom: 10px; /* Space for scrollbar so it doesn't cover content */
+    scrollbar-width: thin; /* Firefox scrollbar */
+}
+
+/* 2. Patch the category card group container (inside controls) */
+.category-scroll-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 10px;
+    /* Ensure the group of cards doesn't shrink when squeezing next to buttons */
+    flex-shrink: 0; 
+}
+
+/* 3. Patch the photo-style category cards */
+.category-card {
+    /* Use flex: 0 0 auto to force cards to maintain width */
+    flex: 0 0 auto; 
+    width: 120px;
+    height: 100px;
+    /* Update design details to match image_1.png */
+    background: #fff; /* Match card background from your provided CSS fullText */
+    border: 1px solid #ddd; /* Match input border color from provided CSS fullText */
+    border-radius: 10px; /* Match standard border-radius from provided CSS fullText */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.2s ease-in-out; /* Slower transition for nicer feel */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtler shadow like initial card definition */
+}
+
+.category-card:hover {
+    transform: translateY(-2px); /* Slight lift */
+    border-color: #2563eb; /* Blue accent color on hover */
+    box-shadow: 0 2px 8px rgba(37,99,235,0.1);
+}
+
+.category-card.active {
+    background: #e0f2fe; /* Very light blue accent for active state */
+    border-color: #2563eb; /* Bold blue border on active */
+    color: #1e40af; /* Darker blue text for active */
+}
+
+/* Handle icon color on active state */
+.category-card.active .card-icon { color: #1e40af; }
+.category-card.active .card-label { color: #1e40af; }
+
+/* Icon styling inside cards */
+.card-icon {
+    font-size: 28px; /* Specific sizing for 'S' and 'O' in image_1.png */
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 5px;
+    line-height: 1;
+}
+
+.card-label {
+    font-size: 13px; /* Standard text size for label */
+    font-weight: 600;
+    color: #000;
+    text-align: center;
+    padding: 0 5px;
+}
+
+/* 4. Patch the action bar (search + buttons) alignment */
+.action-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Center input/buttons relative to each other */
+    height: 100%; /* Fill parent flex height */
+}
+
+/* PATCH FIX: specifically fix input vertical stretching from controls */
+.controls input[type="text"] {
+    height: 38px; /* Specific height for search so it doesn't stretch to 100px */
+    padding: 8px 12px;
+    width: 200px; /* Balanced width from image_1.png */
+    margin: 0;
+    align-self: center; /* Double ensure vertical center within flex container */
+}
+
+/* PATCH FIX: specifically fix button alignment in the control bar */
+.controls button {
+    height: 38px; /* Match input height for a clean row */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap; /* Prevent button text from wrapping if window shrinks */
+    padding: 0 15px; /* Balanced side padding */
+    font-weight: 500;
+    margin: 0;
+}
+/* Add this to your salesdesk.css */
+#moduleWorkspace {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Ensure the workspace doesn't mess with the category scrolling layout */
+.category-nav-wrapper {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+/* --- MODAL STYLES --- */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    backdrop-filter: blur(3px); /* Blur background for a modern feel */
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: relative;
+    animation: modalSlide 0.3s ease-out;
+}
+
+@keyframes modalSlide {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.close-btn {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Modal Internal Elements */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.cancel-btn { background: #6b7280; }
+.confirm-btn { background: #2563eb; }
+
+/* --- PLUS BUTTON STYLE --- */
+.add-cat-btn {
+    padding: 10px 16px;
+    font-weight: 600;
+    background: #16a34a; /* Green for "New/Add" action */
+    border-radius: 8px;
+}
+
+.add-cat-btn:hover { background: #15803d; }
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
