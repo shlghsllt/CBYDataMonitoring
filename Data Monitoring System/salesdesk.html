@@ -1,91 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Desk</title>
-    <link rel="stylesheet" href="salesdesk.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Order Desk</title>
+<link rel="stylesheet" href="salesdesk.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
+
 <body>
 <div class="container">
+
+    <!-- HEADER -->
     <header class="header">
-        <h1>Sales Desk</h1>
+        <h1>Sales Order Desk</h1>
         <button class="add-cat-btn" onclick="openModal()">+ New Category</button>
     </header>
 
+    <!-- CATEGORY CARDS -->
     <h3>Select Category</h3>
     <div class="category-nav-wrapper">
-        <div id="categoryCards" class="category-scroll-container">
-            </div>
+        <div id="categoryCards" class="category-scroll-container"></div>
     </div>
 
-    <div id="moduleWorkspace" style="display: none;">
+    <!-- WORKSPACE -->
+    <div id="moduleWorkspace" style="display:none;">
 
+        <!-- ENTRY FORM -->
         <section class="card">
             <h3>Entry Form</h3>
-            <div id="dynamicForm" class="grid-form">
-                </div>
+            <div id="dynamicForm" class="grid-form"></div>
         </section>
 
+        <!-- ACTION BAR -->
         <section class="controls">
             <div class="action-bar">
-                <input type="text" id="search" placeholder="Search..." oninput="searchData()">
+                <input type="text" id="search" placeholder="Search records..." oninput="searchData()">
                 <button onclick="sortByDate()">Sort by Date</button>
                 <button onclick="exportToExcel()">Export Excel</button>
+                <button onclick="openImportModal()">Import Excel</button>
                 <button class="add-cat-btn" onclick="openColumnModal()">+ Add Column</button>
             </div>
         </section>
 
+        <!-- DATA TABLE -->
         <section class="card">
             <div class="table-wrapper">
-                <table id="mainTable">
+                <table>
                     <thead id="tableHeaders"></thead>
                     <tbody id="tableData"></tbody>
                 </table>
             </div>
         </section>
+
     </div>
 </div>
 
+<!-- ===================== MODALS ===================== -->
+
+<!-- CATEGORY MODAL -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3>Create New Category</h3>
-        <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-            Enter a name for the new module (e.g., Warehouse, Logistics).
-        </p>
-        <input type="text" id="newCategoryName" placeholder="Category Name" style="width: 100%; margin-bottom: 20px;">
+        <h3>New Category</h3>
+        <input type="text" id="newCategoryName" placeholder="e.g. Pickup, Encoding, Sales">
         <div class="modal-actions">
-            <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-            <button class="confirm-btn" onclick="createNewCategory()">Create Category</button>
+            <button onclick="closeModal()">Cancel</button>
+            <button onclick="createNewCategory()">Create</button>
         </div>
     </div>
 </div>
 
+<!-- COLUMN MODAL -->
 <div id="columnModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeColumnModal()">&times;</span>
-        <h3>Add Column to (<span id="activeCategoryName">...</span>)</h3>
-        <p style="font-size: 14px; color: #666; margin-bottom: 15px;">
-            Define a new data field for this category.
-        </p>
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <input type="text" id="newColumnName" placeholder="Column Name" style="flex: 1;">
-            <select id="newColumnType" style="padding: 8px; border: 1px solid #ddd; border-radius: 6px;">
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="date">Date</option>
-            </select>
-        </div>
+        <h3>Add Column</h3>
+        <input type="text" id="newColumnName" placeholder="Column name">
+        <select id="newColumnType">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="date">Date</option>
+        </select>
         <div class="modal-actions">
-            <button class="cancel-btn" onclick="closeColumnModal()">Cancel</button>
-            <button class="confirm-btn" onclick="addColumnToActive()">Add Column</button>
+            <button onclick="closeColumnModal()">Cancel</button>
+            <button onclick="addColumnToActive()">Add</button>
+        </div>
+    </div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeImportModal()">&times;</span>
+        <h3>Import from Excel</h3>
+
+        <label class="modal-label">Choose File</label>
+        <input type="file" id="importFile" accept=".xlsx,.xls" onchange="loadSheets()">
+
+        <label class="modal-label" style="margin-top:12px;">Select Sheet</label>
+        <select id="importSheet" disabled>
+            <option>— load a file first —</option>
+        </select>
+
+        <div id="importPreview" style="margin-top:12px;"></div>
+
+        <div class="modal-actions" style="margin-top:16px;">
+            <button onclick="closeImportModal()">Cancel</button>
+            <button id="importConfirmBtn" onclick="confirmImport()" disabled>Import</button>
         </div>
     </div>
 </div>
 
 <script type="module" src="salesdesk.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </body>
 </html>

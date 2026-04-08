@@ -1,382 +1,66 @@
-* {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
-
-body {
-    margin: 0;
-    background: #f5f7fb;
-}
-
-/* LAYOUT */
-.container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
-}
-
-.header {
-    margin-bottom: 20px;
-}
-
-/* CARDS */
-.card {
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-/* ADMIN GRID */
-.admin-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-/* ROW (input + select + button) */
-.row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-/* FORM GRID */
-.grid-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-}
-
-.input-box {
-    display: flex;
-    flex-direction: column;
-}
-
-input, select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-/* BUTTONS */
-button { 
-    padding: 8px 12px; 
-    border: none; 
-    border-radius: 6px; 
-    background: #2563eb; 
-    color: white; 
-    cursor: pointer; 
-    transition: 0.2s; 
-}
-
-button:hover {
-    background: #1e4ed8;
-}
-
-.save-btn {
-    grid-column: 1 / -1;
-    background: #16a34a;
-}
-
-.save-btn:hover {
-    background: #15803d;
-}
-
-.edit-btn
-{
-    width: 60px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #2563eb; 
-}
-
-.edit-btn:hover
-{
-    background: #1e4ed8;
-}
-
-.del-btn {
-    width: 60px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #dc2626;
-}
-
-.del-btn:hover {
-    background: #b91c1c;
-}
-
-.action-buttons {
-    display: flex;
-    flex-direction: column; /* para patong */
-    gap: 3px; 
-}
-
-/* TABLE */
-.table-wrapper {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: #1f2937;
-    color: white;
-}
-
-th, td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
-}
-
-tr:hover {
-    background: #f9fafb;
-}
-/* ========================================= */
-/* PATCHED CSS FOR CONTROLS AND CARDS */
-/* ========================================= */
-
-/* 1. Update the main controls area. Fix alignment issues. */
-.controls {
-    display: flex;
-    gap: 15px; /* Use consistent gap */
-    margin: 20px 0;
-    /* PATCH FIX: Stop elements from stretching vertically to match card height */
-    align-items: center; 
-    width: 100%;
-    /* Allow the whole control area to side-scroll if required */
-    overflow-x: auto; 
-    padding-bottom: 10px; /* Space for scrollbar so it doesn't cover content */
-    scrollbar-width: thin; /* Firefox scrollbar */
-}
-
-/* 2. Patch the category card group container (inside controls) */
+/* --- CATEGORY NAVIGATION --- */
 .category-scroll-container {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 10px;
-    /* Ensure the group of cards doesn't shrink when squeezing next to buttons */
-    flex-shrink: 0; 
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px 5px;
+    scrollbar-width: thin;
 }
 
-/* 3. Patch the photo-style category cards */
 .category-card {
-    /* Use flex: 0 0 auto to force cards to maintain width */
-    flex: 0 0 auto; 
-    width: 120px;
-    height: 100px;
-    /* Update design details to match image_1.png */
-    background: #fff; /* Match card background from your provided CSS fullText */
-    border: 1px solid #ddd; /* Match input border color from provided CSS fullText */
-    border-radius: 10px; /* Match standard border-radius from provided CSS fullText */
+    min-width: 140px;
+    background: white;
+    padding: 20px 15px;
+    border-radius: 8px; /* Changed from 12px to match square theme */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 2px solid transparent;
+}
+
+.category-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.category-card.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+/* --- SQUARE ICON DESIGN --- */
+.card-icon {
+    width: 52px; /* Slightly larger for a better square presence */
+    height: 52px;
+    border-radius: 8px; /* Use 0px for sharp corners, 8px for modern soft-square */
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: 0.2s ease-in-out; /* Slower transition for nicer feel */
-    box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtler shadow like initial card definition */
-}
-
-.category-card:hover,
-.category-card.active {
-    transform: translateY(-2px);
-    border: 2px solid #2563eb; /* 🔥 blue border */
-    box-shadow: 0 2px 8px rgba(37,99,235,0.2);
-    border: 2px solid #2563eb;
-    filter: brightness(0.98);
-}
-
-/* Handle icon color on active state */
-.category-card.active .card-icon { color: #1e40af; }
-.category-card.active .card-label { color: #1e40af; }
-
-/* Icon styling inside cards */
-.card-icon {
-    font-size: 28px; /* Specific sizing for 'S' and 'O' in image_1.png */
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 5px;
-    line-height: 1;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #334155;
+    margin: 0 auto 12px auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .card-label {
-    font-size: 13px; /* Standard text size for label */
+    display: block;
+    font-size: 14px;
     font-weight: 600;
-    color: #000;
-    text-align: center;
-    padding: 0 5px;
-}
-
-/* 4. Patch the action bar (search + buttons) alignment */
-.action-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center; /* Center input/buttons relative to each other */
-    height: 100%; /* Fill parent flex height */
-}
-
-/* PATCH FIX: specifically fix input vertical stretching from controls */
-.controls input[type="text"] {
-    height: 38px; /* Specific height for search so it doesn't stretch to 100px */
-    padding: 8px 12px;
-    width: 200px; /* Balanced width from image_1.png */
-    margin: 0;
-    align-self: center; /* Double ensure vertical center within flex container */
-}
-
-/* PATCH FIX: specifically fix button alignment in the control bar */
-.controls button {
-    height: 38px; /* Match input height for a clean row */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap; /* Prevent button text from wrapping if window shrinks */
-    padding: 0 15px; /* Balanced side padding */
-    font-weight: 500;
-    margin: 0;
-}
-/* Add this to your salesdesk.css */
-#moduleWorkspace {
-    animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Ensure the workspace doesn't mess with the category scrolling layout */
-.category-nav-wrapper {
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-/* --- MODAL STYLES --- */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    backdrop-filter: blur(3px); /* Blur background for a modern feel */
+    color: #1e293b;
+}
+
+/* --- TOAST & MODAL TWEAKS --- */
+.toast {
+    border-radius: 4px; /* Squared corners for consistency */
 }
 
 .modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 25px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
-    animation: modalSlide 0.3s ease-out;
-}
-
-@keyframes modalSlide {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.close-btn {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-}
-
-/* Modal Internal Elements */
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.cancel-btn { background: #6b7280; }
-.confirm-btn { background: #2563eb; }
-
-/* --- PLUS BUTTON STYLE --- */
-.add-cat-btn {
-    padding: 10px 16px;
-    font-weight: 600;
-    background: #16a34a; /* Green for "New/Add" action */
-    border-radius: 8px;
-}
-
-.add-cat-btn:hover { background: #15803d; }
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.category-card {
-    position: relative;
-}
-
-.card-menu {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-}
-
-.menu-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color:#000;
-}
-
-.menu-btn:hover
-{
-    color: white;
-}
-
-/* dropdown */
-.dropdown {
-    display: none;
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.dropdown button {
-    padding: 6px 12px;
-    border: none;
-    background: white;
-    cursor: pointer;
-    color:black;
-}
-
-.dropdown button:hover {
-    background: #234ea6;
-    color:white;
-}
-
-
-/* para dumikit yung delete button sa para sa data  */
-.field-menu {
-    position: relative; /* 👈 IMPORTANT */
+    border-radius: 8px; /* Squared corners for consistency */
 }
