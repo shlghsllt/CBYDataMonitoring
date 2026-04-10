@@ -1,382 +1,571 @@
-* {
-    box-sizing: border-box;
-    font-family: Arial, sans-serif;
-}
+/* ============================================
+   SALES ORDER DESK — CLEAN MINIMAL (Option A)
+   ============================================ */
+
+/* --- RESET & BASE --- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    margin: 0;
-    background: #f5f7fb;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f8f9fb;
+    color: #1e293b;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* LAYOUT */
+/* --- LAYOUT --- */
 .container {
-    padding: 20px;
-    max-width: 1200px;
-    margin: auto;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px;
 }
 
+/* --- HEADER --- */
 .header {
-    margin-bottom: 20px;
-}
-
-/* CARDS */
-.card {
-    background: #fff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-
-/* ADMIN GRID */
-.admin-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-}
-
-/* ROW (input + select + button) */
-.row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-/* FORM GRID */
-.grid-form {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 10px;
-}
-
-.input-box {
-    display: flex;
-    flex-direction: column;
-}
-
-input, select {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
-
-/* BUTTONS */
-button { 
-    padding: 8px 12px; 
-    border: none; 
-    border-radius: 6px; 
-    background: #2563eb; 
-    color: white; 
-    cursor: pointer; 
-    transition: 0.2s; 
-}
-
-button:hover {
-    background: #1e4ed8;
-}
-
-.save-btn {
-    grid-column: 1 / -1;
-    background: #16a34a;
-}
-
-.save-btn:hover {
-    background: #15803d;
-}
-
-.edit-btn
-{
-    width: 60px;
-    height: 30px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: #2563eb; 
+    justify-content: space-between;
+    margin-bottom: 28px;
 }
 
-.edit-btn:hover
-{
-    background: #1e4ed8;
+.header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.3px;
 }
 
-.del-btn {
-    width: 60px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #dc2626;
-}
-
-.del-btn:hover {
-    background: #b91c1c;
-}
-
-.action-buttons {
-    display: flex;
-    flex-direction: column; /* para patong */
-    gap: 3px; 
-}
-
-/* TABLE */
-.table-wrapper {
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: #1f2937;
-    color: white;
-}
-
-th, td {
-    padding: 10px;
-    border-bottom: 1px solid #eee;
-    text-align: left;
-}
-
-tr:hover {
-    background: #f9fafb;
-}
-/* ========================================= */
-/* PATCHED CSS FOR CONTROLS AND CARDS */
-/* ========================================= */
-
-/* 1. Update the main controls area. Fix alignment issues. */
-.controls {
-    display: flex;
-    gap: 15px; /* Use consistent gap */
-    margin: 20px 0;
-    /* PATCH FIX: Stop elements from stretching vertically to match card height */
-    align-items: center; 
-    width: 100%;
-    /* Allow the whole control area to side-scroll if required */
-    overflow-x: auto; 
-    padding-bottom: 10px; /* Space for scrollbar so it doesn't cover content */
-    scrollbar-width: thin; /* Firefox scrollbar */
-}
-
-/* 2. Patch the category card group container (inside controls) */
+/* --- CATEGORY NAVIGATION --- */
 .category-scroll-container {
     display: flex;
-    flex-wrap: nowrap;
     gap: 10px;
-    /* Ensure the group of cards doesn't shrink when squeezing next to buttons */
-    flex-shrink: 0; 
+    overflow-x: auto;
+    padding: 4px 2px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
 }
 
-/* 3. Patch the photo-style category cards */
 .category-card {
-    /* Use flex: 0 0 auto to force cards to maintain width */
-    flex: 0 0 auto; 
-    width: 120px;
-    height: 100px;
-    /* Update design details to match image_1.png */
-    background: #fff; /* Match card background from your provided CSS fullText */
-    border: 1px solid #ddd; /* Match input border color from provided CSS fullText */
-    border-radius: 10px; /* Match standard border-radius from provided CSS fullText */
+    min-width: 130px;
+    background: #ffffff;
+    padding: 16px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.15s, transform 0.15s;
+    user-select: none;
+}
+
+.category-card:hover {
+    border-color: #93c5fd;
+    transform: translateY(-2px);
+}
+
+.category-card.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: 0.2s ease-in-out; /* Slower transition for nicer feel */
-    box-shadow: 0 1px 4px rgba(0,0,0,0.03); /* Subtler shadow like initial card definition */
-}
-
-.category-card:hover,
-.category-card.active {
-    transform: translateY(-2px);
-    border: 2px solid #2563eb; /* 🔥 blue border */
-    box-shadow: 0 2px 8px rgba(37,99,235,0.2);
-    border: 2px solid #2563eb;
-    filter: brightness(0.98);
-}
-
-/* Handle icon color on active state */
-.category-card.active .card-icon { color: #1e40af; }
-.category-card.active .card-label { color: #1e40af; }
-
-/* Icon styling inside cards */
-.card-icon {
-    font-size: 28px; /* Specific sizing for 'S' and 'O' in image_1.png */
-    font-weight: bold;
-    color: #000;
-    margin-bottom: 5px;
-    line-height: 1;
+    font-weight: 700;
+    font-size: 13px;
+    color: #334155;
+    margin: 0 auto 10px auto;
+    background: rgba(0,0,0,0.06);
 }
 
 .card-label {
-    font-size: 13px; /* Standard text size for label */
+    display: block;
+    font-size: 13px;
     font-weight: 600;
-    color: #000;
-    text-align: center;
-    padding: 0 5px;
-}
-
-/* 4. Patch the action bar (search + buttons) alignment */
-.action-bar {
-    display: flex;
-    gap: 10px;
-    align-items: center; /* Center input/buttons relative to each other */
-    height: 100%; /* Fill parent flex height */
-}
-
-/* PATCH FIX: specifically fix input vertical stretching from controls */
-.controls input[type="text"] {
-    height: 38px; /* Specific height for search so it doesn't stretch to 100px */
-    padding: 8px 12px;
-    width: 200px; /* Balanced width from image_1.png */
-    margin: 0;
-    align-self: center; /* Double ensure vertical center within flex container */
-}
-
-/* PATCH FIX: specifically fix button alignment in the control bar */
-.controls button {
-    height: 38px; /* Match input height for a clean row */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap; /* Prevent button text from wrapping if window shrinks */
-    padding: 0 15px; /* Balanced side padding */
-    font-weight: 500;
-    margin: 0;
-}
-/* Add this to your salesdesk.css */
-#moduleWorkspace {
-    animation: fadeIn 0.4s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Ensure the workspace doesn't mess with the category scrolling layout */
-.category-nav-wrapper {
-    margin-bottom: 30px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-/* --- MODAL STYLES --- */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-    backdrop-filter: blur(3px); /* Blur background for a modern feel */
+    color: #1e293b;
 }
 
-.modal-content {
-    background-color: #fff;
-    margin: 10% auto;
-    padding: 25px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    position: relative;
-    animation: modalSlide 0.3s ease-out;
-}
-
-@keyframes modalSlide {
-    from { transform: translateY(-30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.close-btn {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: #666;
-}
-
-/* Modal Internal Elements */
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.cancel-btn { background: #6b7280; }
-.confirm-btn { background: #2563eb; }
-
-/* --- PLUS BUTTON STYLE --- */
-.add-cat-btn {
-    padding: 10px 16px;
-    font-weight: 600;
-    background: #16a34a; /* Green for "New/Add" action */
-    border-radius: 8px;
-}
-
-.add-cat-btn:hover { background: #15803d; }
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.category-card {
-    position: relative;
-}
-
+/* --- CARD MENU (delete button) --- */
 .card-menu {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 6px;
+    right: 6px;
 }
 
 .menu-btn {
     background: none;
     border: none;
-    font-size: 18px;
     cursor: pointer;
-    color:#000;
+    font-size: 16px;
+    color: #94a3b8;
+    padding: 2px 4px;
+    border-radius: 4px;
+    line-height: 1;
 }
 
-.menu-btn:hover
-{
-    color: white;
-}
+.menu-btn:hover { background: #f1f5f9; color: #475569; }
 
-/* dropdown */
 .dropdown {
     display: none;
     position: absolute;
-    top: 100%;
     right: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-width: 130px;
+    overflow: hidden;
 }
 
 .dropdown button {
-    padding: 6px 12px;
+    display: block;
+    width: 100%;
+    padding: 9px 14px;
+    background: none;
     border: none;
-    background: white;
+    text-align: left;
     cursor: pointer;
-    color:black;
+    font-size: 13px;
+    color: #ef4444;
 }
 
-.dropdown button:hover {
-    background: #234ea6;
-    color:white;
+.dropdown button:hover { background: #fef2f2; }
+
+/* --- SECTION LABEL --- */
+h3 {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
 }
 
+/* --- MODULE WORKSPACE --- */
+#moduleWorkspace { margin-top: 8px; }
 
-/* para dumikit yung delete button sa para sa data  */
+/* --- ENTRY FORM CARD --- */
+.card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+}
+
+.card > h3 { margin-bottom: 16px; }
+
+.grid-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    align-items: end;
+}
+
+.input-box {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.input-box label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-box input {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-box input:focus {
+    border-color: #2563eb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* --- SAVE BUTTON --- */
+.save-btn {
+    height: 36px;
+    padding: 0 20px;
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+    align-self: end;
+}
+
+.save-btn:hover { background: #1d4ed8; }
+.save-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+/* --- ACTION BAR --- */
+.controls { margin-bottom: 12px; }
+
+.action-bar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-bar input[type="text"] {
+    flex: 1;
+    min-width: 200px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 13px;
+    background: #fff;
+    outline: none;
+    color: #1e293b;
+    transition: border-color 0.15s;
+}
+
+.action-bar input[type="text"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.action-bar button {
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    background: #fff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+}
+
+.action-bar button:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+.add-cat-btn {
+    height: 36px;
+    padding: 0 14px;
+    background: #0f172a !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.add-cat-btn:hover { background: #1e293b !important; }
+
+/* ============================================
+   TABLE — OPTION A (Notion / Linear style)
+   ============================================ */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+/* Header */
+thead tr {
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+}
+
+thead th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 600;
+    color: #94a3b8;
+    padding: 10px 14px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+/* Rows */
+tbody tr {
+    border-bottom: 0.5px solid #f1f5f9;
+    transition: background 0.1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+
+tbody tr:hover { background: #f8fafc; }
+
+tbody td {
+    padding: 11px 14px;
+    color: #1e293b;
+    vertical-align: middle;
+}
+
+/* No data row */
+tbody td[colspan] {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* --- ACTION BUTTONS IN TABLE --- */
+.action-buttons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.edit-btn {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.edit-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+.del-btn {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid #fecaca;
+    background: #fff;
+    color: #ef4444;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.del-btn:hover { background: #fef2f2; }
+
+/* --- STATUS BADGE (for future Status column) --- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 99px;
+}
+
+.badge-green  { background: #dcfce7; color: #15803d; }
+.badge-amber  { background: #fef3c7; color: #b45309; }
+.badge-blue   { background: #dbeafe; color: #1d4ed8; }
+.badge-red    { background: #fee2e2; color: #b91c1c; }
+.badge-gray   { background: #f1f5f9; color: #475569; }
+
+.badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* --- TOAST --- */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast-success { background: #16a34a; }
+.toast-error   { background: #dc2626; }
+
+/* --- MODAL --- */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal[style*="block"] { display: flex !important; }
+
+.modal-content {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 380px;
+    position: relative;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.modal-content h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    text-transform: none;
+    letter-spacing: 0;
+    margin-bottom: 16px;
+}
+
+.modal-content input,
+.modal-content select {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    font-size: 13px;
+    color: #1e293b;
+    background: #f8fafc;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+    border-color: #2563eb;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.modal-actions button {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    color: #475569;
+    transition: background 0.15s;
+}
+
+.modal-actions button:hover { background: #f1f5f9; }
+
+.modal-actions button:last-child {
+    background: #2563eb;
+    color: #fff;
+    border-color: #2563eb;
+}
+
+.modal-actions button:last-child:hover { background: #1d4ed8; }
+
+.modal-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    font-size: 18px;
+    cursor: pointer;
+    color: #94a3b8;
+    line-height: 1;
+}
+
+.close-btn:hover { color: #475569; }
+
+/* Modal label (used in import modal) */
+.modal-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+}
+
+.modal-content input[type="file"] {
+    width: 100%;
+    font-size: 13px;
+    color: #475569;
+    padding: 6px 0;
+    margin-bottom: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* --- FIELD HEADER (delete column menu) --- */
+.field-header { margin-bottom: 4px; }
+
 .field-menu {
-    position: relative; /* 👈 IMPORTANT */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
 }
+
+.field-menu label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* --- SCROLLBAR --- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }

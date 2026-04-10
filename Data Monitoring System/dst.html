@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sales Order Desk</title>
+<title>DST Desk</title>
 
 <link rel="stylesheet" href="dst.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,31 +11,40 @@
 
 <body>
 <div class="container">
+
+    <!-- HEADER -->
     <header class="header">
-        <h1>DST</h1>
+        <h1>DST Desk</h1>
         <button class="add-cat-btn" onclick="openModal()">+ New Category</button>
     </header>
 
+    <!-- CATEGORY CARDS -->
     <h3>Select Category</h3>
     <div class="category-nav-wrapper">
         <div id="categoryCards" class="category-scroll-container"></div>
     </div>
 
+    <!-- WORKSPACE -->
     <div id="moduleWorkspace" style="display:none;">
+
+        <!-- ENTRY FORM -->
         <section class="card">
             <h3>Entry Form</h3>
             <div id="dynamicForm" class="grid-form"></div>
         </section>
 
+        <!-- ACTION BAR -->
         <section class="controls">
             <div class="action-bar">
-                <input type="text" id="search" placeholder="Search..." oninput="searchData()">
+                <input type="text" id="search" placeholder="Search records..." oninput="searchData()">
                 <button onclick="sortByDate()">Sort by Date</button>
                 <button onclick="exportToExcel()">Export Excel</button>
-                <button class="add-cat-btn" onclick="openColumnModal()">+Add Column</button>
+                <button onclick="openImportModal()">Import Excel</button>
+                <button class="add-cat-btn" onclick="openColumnModal()">+ Add Column</button>
             </div>
         </section>
 
+        <!-- DATA TABLE -->
         <section class="card">
             <div class="table-wrapper">
                 <table>
@@ -44,18 +53,21 @@
                 </table>
             </div>
         </section>
+
     </div>
 </div>
+
+<!-- ===================== MODALS ===================== -->
 
 <!-- CATEGORY MODAL -->
 <div id="categoryModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h3>New Sales Category</h3>
-        <input type="text" id="newCategoryName" placeholder="e.g. Vehicle Database, DTF">
+        <h3>New Category</h3>
+        <input type="text" id="newCategoryName" placeholder="e.g. Pickup, Encoding, Sales">
         <div class="modal-actions">
             <button onclick="closeModal()">Cancel</button>
-            <button onclick="createCategory()">Create</button>
+            <button onclick="createNewCategory()">Create</button>
         </div>
     </div>
 </div>
@@ -64,24 +76,43 @@
 <div id="columnModal" class="modal">
     <div class="modal-content">
         <span class="close-btn" onclick="closeColumnModal()">&times;</span>
-        <h3>Add Field</h3>
-
-        <input type="text" id="newColumnName" placeholder="Field name">
-
+        <h3>Add Column</h3>
+        <input type="text" id="newColumnName" placeholder="Column name">
         <select id="newColumnType">
             <option value="text">Text</option>
             <option value="number">Number</option>
             <option value="date">Date</option>
         </select>
-
         <div class="modal-actions">
             <button onclick="closeColumnModal()">Cancel</button>
-            <button onclick="addColumn()">Add</button>
+            <button onclick="addColumnToActive()">Add</button>
         </div>
     </div>
 </div>
 
-<script type="module" src="dst.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<!-- IMPORT MODAL -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeImportModal()">&times;</span>
+        <h3>Import from Excel</h3>
+
+        <label class="modal-label">Choose File</label>
+        <input type="file" id="importFile" accept=".xlsx,.xls" onchange="loadSheets()">
+
+        <label class="modal-label" style="margin-top:12px;">Select Sheet</label>
+        <select id="importSheet" disabled>
+            <option>— load a file first —</option>
+        </select>
+
+        <div id="importPreview" style="margin-top:12px;"></div>
+
+        <div class="modal-actions" style="margin-top:16px;">
+            <button onclick="closeImportModal()">Cancel</button>
+            <button id="importConfirmBtn" onclick="confirmImport()" disabled>Import</button>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="engineering.js"></script>
 </body>
 </html>

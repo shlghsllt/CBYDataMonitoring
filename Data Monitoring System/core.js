@@ -45,7 +45,7 @@ export const AppCore = {
         window.deleteCategory    = (id, name)  => this.deleteCategory(id, name);
         window.toggleMenu        = (event, id) => this.toggleMenu(event, `menu-${id}`);
 
-        window.openImportModal   = ()          => this.openImportModal();
+        window.openImportModal   = ()          => document.getElementById('importModal').style.display = 'block';
         window.closeImportModal  = ()          => this.closeImportModal();
         window.loadSheets        = ()          => this.loadSheets();
         window.confirmImport     = ()          => this.confirmImport();
