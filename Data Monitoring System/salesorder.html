@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sales Order Desk</title>
-
 <link rel="stylesheet" href="salesorder.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -90,23 +90,50 @@
     </div>
 </div>
 
+<!-- EDIT ENTRY MODAL -->
+<div id="editModal" class="modal">
+    <div class="modal-content edit-modal-content">
+        <span class="close-btn" onclick="closeEditModal()">&times;</span>
+        <h3>Edit Record</h3>
+        <div id="editForm" class="edit-grid-form"></div>
+        <div class="modal-actions">
+            <button onclick="closeEditModal()">Cancel</button>
+            <button id="editSaveBtn" onclick="saveEditEntry()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
 <!-- IMPORT MODAL -->
 <div id="importModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content import-modal-content">
         <span class="close-btn" onclick="closeImportModal()">&times;</span>
         <h3>Import from Excel</h3>
 
-        <label class="modal-label">Choose File</label>
+        <!-- Step 1 -->
+        <label class="modal-label">1. Choose File</label>
         <input type="file" id="importFile" accept=".xlsx,.xls" onchange="loadSheets()">
 
-        <label class="modal-label" style="margin-top:12px;">Select Sheet</label>
+        <!-- Step 2 -->
+        <label class="modal-label">2. Select Sheet</label>
         <select id="importSheet" disabled>
             <option>— load a file first —</option>
         </select>
 
-        <div id="importPreview" style="margin-top:12px;"></div>
+        <!-- Step 3 -->
+        <label class="modal-label">3. Header Row Number</label>
+        <input type="number" id="importHeaderRow" value="1" min="1" oninput="previewSheet()">
+        <p class="import-hint">
+            Which row has your column names? Most files use row 1.
+            Use row 4 for files with title/summary rows on top.
+        </p>
 
-        <div class="modal-actions" style="margin-top:16px;">
+        <!-- Detected Excel columns display -->
+        <div id="importExcelHeaders"></div>
+
+        <!-- Match preview -->
+        <div id="importPreview"></div>
+
+        <div class="modal-actions">
             <button onclick="closeImportModal()">Cancel</button>
             <button id="importConfirmBtn" onclick="confirmImport()" disabled>Import</button>
         </div>

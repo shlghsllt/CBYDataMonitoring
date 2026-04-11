@@ -13,7 +13,9 @@ export const AppCore = {
         editingId: null,
         cache: {},
         isLoading: false,
-        _importWorkbook: null
+        _importWorkbook: null,
+        _importColumnsWorkbook: null,
+        _columnsToImport: []
     },
 
     // ============================================================
@@ -36,7 +38,7 @@ export const AppCore = {
 
         window.openModal         = ()          => document.getElementById('categoryModal').style.display = 'block';
         window.closeModal        = ()          => document.getElementById('categoryModal').style.display = 'none';
-        window.openColumnModal   = ()          => document.getElementById('columnModal').style.display = 'block';
+        window.openColumnModal   = ()          => this.openColumnModal();
         window.closeColumnModal  = ()          => document.getElementById('columnModal').style.display = 'none';
 
         window.createNewCategory = ()          => this.createNewCategory();
@@ -49,6 +51,11 @@ export const AppCore = {
         window.closeImportModal  = ()          => this.closeImportModal();
         window.loadSheets        = ()          => this.loadSheets();
         window.confirmImport     = ()          => this.confirmImport();
+
+        window.openImportColumnsModal = ()     => this.openImportColumnsModal();
+        window.closeImportColumnsModal = ()    => this.closeImportColumnsModal();
+        window.loadColumnsSheets = ()          => this.loadColumnsSheets();
+        window.confirmImportColumns = ()       => this.confirmImportColumns();
 
         window.addEventListener('click', () => {
             document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
@@ -92,8 +99,7 @@ export const AppCore = {
 
                     const [tRes, eRes] = await Promise.all([
                         supabaseClient.from('doc_templates').select('*, doc_columns(*)').eq('id', templateId).single(),
-                        supabaseClient.from('doc_entries').select('*').eq('template_id', templateId).order('created_at', { ascending: false })
-                    ]);
+supabaseClient.from('doc_entries').select('*').eq('template_id', templateId).order('id', { ascending: true })                    ]);
 
                     if (tRes.error) throw tRes.error;
 
@@ -439,7 +445,8 @@ export const AppCore = {
                     .from('doc_entries')
                     .insert([{ template_id: this.state.currentTemplate.id, content }])
                     .select();
-                this.state.localEntries.unshift(res.data[0]);
+                this.state.localEntries.push(res.data[0]);
+                this.state.localEntries.sort((a, b) => a.id - b.id);
             }
 
             this.state.cache[this.state.currentTemplate.name].entries = this.state.localEntries;
@@ -544,7 +551,6 @@ export const AppCore = {
         document.getElementById('importPreview').innerHTML = '';
         this.state._importWorkbook = null;
     },
-
     loadSheets: function() {
         const file = document.getElementById('importFile').files[0];
         if (!file) return;
@@ -566,118 +572,405 @@ export const AppCore = {
         reader.readAsArrayBuffer(file);
     },
 
-    getImportRawRows: function(ws) {
-        const rawRows = XLSX.utils.sheet_to_json(ws, { defval: '', header: 1 });
-        return rawRows.filter(row => row.some(cell => String(cell).trim() !== ''));
-    },
+    // ============================================================
+// IMPORT FROM EXCEL - FIXED
+// ============================================================
+getImportRawRows: function(ws) {
+    // Get all rows as 2D array
+    const rawRows = XLSX.utils.sheet_to_json(ws, { defval: '', header: 1 });
+    // Filter out completely empty rows AND rows that are just formulas with no values
+    return rawRows.filter(row => {
+        // Check if row has any actual content (not just empty strings)
+        return row.some(cell => {
+            const str = String(cell).trim();
+            return str !== '' && !str.startsWith('=');
+        });
+    });
+},
 
-    detectHeaderRow: function(rawRows, cols) {
-        if (!rawRows.length) return false;
-        const firstRow = rawRows[0].map(cell => String(cell).trim());
-        const matchCount = firstRow.filter(value => cols.includes(value)).length;
+detectHeaderRow: function(rawRows, cols) {
+    if (!rawRows.length) return false;
+    
+    // Look at first few rows to find the actual header
+    for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+        const row = rawRows[i].map(cell => String(cell).trim().toUpperCase());
+        const matchCount = cols.filter(col => row.includes(col.toUpperCase())).length;
         const threshold = Math.max(2, Math.ceil(cols.length / 2));
-        return matchCount >= threshold;
-    },
+        if (matchCount >= threshold) {
+            return i; // Return the index of the header row
+        }
+    }
+    return -1; // No header found
+},
 
-    mapImportRows: function(rawRows, cols) {
-        const hasHeader = this.detectHeaderRow(rawRows, cols);
-        if (hasHeader) {
-            const headers = rawRows[0].map(cell => String(cell).trim());
-            return rawRows.slice(1)
-                .filter(row => row.some(cell => String(cell).trim() !== ''))
-                .map(row => Object.fromEntries(
-                    cols.map(col => {
-                        const index = headers.indexOf(col);
-                        return [col, index !== -1 ? String(row[index] || '').trim() : ''];
-                    })
-                ));
+mapImportRows: function(rawRows, cols) {
+    const headerIndex = this.detectHeaderRow(rawRows, cols);
+    
+    let dataStartIndex;
+    let headers;
+    
+    if (headerIndex >= 0) {
+        // Use the detected header row
+        headers = rawRows[headerIndex].map(cell => String(cell).trim());
+        dataStartIndex = headerIndex + 1;
+    } else {
+        // No header found - use column order
+        headers = cols;
+        dataStartIndex = 0;
+    }
+    
+    // Map rows starting from dataStartIndex
+    const mappedRows = [];
+    for (let i = dataStartIndex; i < rawRows.length; i++) {
+        const row = rawRows[i];
+        // Skip empty rows
+        if (!row.some(cell => String(cell).trim() !== '')) continue;
+        
+        const mappedRow = {};
+        cols.forEach(col => {
+            if (headerIndex >= 0) {
+                // Find by header name (case-insensitive)
+                const colIndex = headers.findIndex(h => 
+                    h.toUpperCase() === col.toUpperCase()
+                );
+                if (colIndex >= 0 && colIndex < row.length) {
+                    const value = String(row[colIndex] || '').trim();
+                    // Skip formula results that are empty
+                    mappedRow[col] = value;
+                } else {
+                    mappedRow[col] = '';
+                }
+            } else {
+                // Map by position
+                const colPosition = cols.indexOf(col);
+                if (colPosition < row.length) {
+                    const value = String(row[colPosition] || '').trim();
+                    mappedRow[col] = value;
+                } else {
+                    mappedRow[col] = '';
+                }
+            }
+        });
+        
+        // Only add if at least one column has a value
+        if (Object.values(mappedRow).some(v => v !== '')) {
+            mappedRows.push(mappedRow);
+        }
+    }
+    
+    return mappedRows;
+},
+
+previewSheet: function() {
+    const sheetName = document.getElementById('importSheet').value;
+    const ws = this.state._importWorkbook.Sheets[sheetName];
+    const rawRows = this.getImportRawRows(ws);
+
+    const preview = document.getElementById('importPreview');
+    const confirmBtn = document.getElementById('importConfirmBtn');
+    const cols = this.state.currentTemplate.doc_columns.map(c => c.column_name);
+    
+    const previewRows = this.mapImportRows(rawRows, cols);
+
+    if (!previewRows.length) {
+        preview.innerHTML = '<span style="color:#ef4444;">No data rows found in this sheet. Make sure the sheet contains data matching your columns.</span>';
+        confirmBtn.disabled = true;
+        return;
+    }
+
+    const headerIndex = this.detectHeaderRow(rawRows, cols);
+    const headerNote = headerIndex >= 0
+        ? `Found header row at position ${headerIndex + 1}. Mapping by column names.`
+        : 'No header row found. Importing rows by column order.';
+
+    // Show sample of first 3 rows in preview
+    const sampleRows = previewRows.slice(0, 3).map(row => 
+        Object.entries(row).map(([k, v]) => `${k}: ${v || '(empty)'}`).join(', ')
+    ).join('<br>');
+
+    preview.innerHTML = `
+        <div style="font-size:12px;line-height:1.8;padding:10px 12px;background:#f8fafc;border-radius:7px;border:1px solid #e2e8f0;">
+            <div><strong>${previewRows.length} rows</strong> will be imported</div>
+            <div>${headerNote}</div>
+            <div>Columns: <span style="color:#16a34a;font-weight:600;">${cols.join(', ')}</span></div>
+            <div style="margin-top:8px;padding-top:8px;border-top:1px solid #e2e8f0;">
+                <strong>Sample data:</strong><br>
+                <span style="font-family:monospace;font-size:11px;">${sampleRows}</span>
+            </div>
+        </div>
+    `;
+    confirmBtn.disabled = false;
+},
+
+confirmImport: async function() {
+    const sheetName = document.getElementById('importSheet').value;
+    const ws = this.state._importWorkbook.Sheets[sheetName];
+    const rawRows = this.getImportRawRows(ws);
+    const cols = this.state.currentTemplate.doc_columns.map(c => c.column_name);
+    const rows = this.mapImportRows(rawRows, cols);
+
+    if (!rows.length) {
+        return this.showToast('No data rows to import.', 'error');
+    }
+
+    const entries = rows.map(row => ({
+        template_id: this.state.currentTemplate.id,
+        content: Object.fromEntries(cols.map(c => [c, row[c] || '']))
+    }));
+
+    const confirmBtn = document.getElementById('importConfirmBtn');
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = 'Importing...';
+
+    try {
+        const batchSize = 100;
+        for (let i = 0; i < entries.length; i += batchSize) {
+            const batch = entries.slice(i, i + batchSize);
+            const { error } = await supabaseClient.from('doc_entries').insert(batch);
+            if (error) throw error;
         }
 
-        return rawRows
-            .filter(row => row.some(cell => String(cell).trim() !== ''))
-            .map(row => Object.fromEntries(
-                cols.map((col, index) => [col, String(row[index] || '').trim()])
-            ));
+        // Refresh the entries
+                const { data, error } = await supabaseClient
+            .from('doc_entries')
+            .select('*')
+            .eq('template_id', this.state.currentTemplate.id)
+            .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        this.state.cache[this.state.currentTemplate.name] = {
+        template: this.state.currentTemplate,
+        entries: this.state.localEntries
+        };
+        if (this.state.cache[this.state.currentTemplate.name]) {
+            this.state.cache[this.state.currentTemplate.name].entries = this.state.localEntries;
+        }
+
+        this.renderTable(this.state.localEntries);
+        this.closeImportModal();
+        this.showToast(`${entries.length} rows imported successfully!`);
+
+    } catch (err) {
+        this.showToast('Import failed: ' + err.message, 'error');
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = 'Import';
+    }
+},
+
+    // ============================================================
+    // IMPORT COLUMNS FROM EXCEL
+    // ============================================================
+    addImportColumnsButton: function() {
+        const columnModal = document.getElementById('columnModal');
+        if (!columnModal) return;
+        const actions = columnModal.querySelector('.modal-actions');
+        if (!actions || actions.querySelector('.import-columns-btn')) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'import-columns-btn';
+        btn.onclick = () => this.openImportColumnsModal();
+        btn.innerText = 'Import Columns';
+        const addBtn = actions.querySelector('button[onclick*="addColumnToActive"]');
+        if (addBtn) {
+            actions.insertBefore(btn, addBtn);
+        } else {
+            actions.appendChild(btn);
+        }
     },
 
-    previewSheet: function() {
-        const sheetName = document.getElementById('importSheet').value;
-        const ws        = this.state._importWorkbook.Sheets[sheetName];
-        const rawRows   = this.getImportRawRows(ws);
+    openImportColumnsModal: function() {
+        if (!this.state.currentTemplate) return this.showToast('Select a category first.', 'error');
 
-        const preview    = document.getElementById('importPreview');
-        const confirmBtn = document.getElementById('importConfirmBtn');
-        const cols       = this.state.currentTemplate.doc_columns.map(c => c.column_name);
-        const hasHeader  = this.detectHeaderRow(rawRows, cols);
-        const previewRows = this.mapImportRows(rawRows, cols);
+        let modal = document.getElementById('importColumnsModal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'importColumnsModal';
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closeImportColumnsModal()">&times;</span>
+                    <h3>Import Columns from Excel</h3>
 
-        if (!previewRows.length) {
-            preview.innerHTML = '<span style="color:#ef4444;">No data found in this sheet.</span>';
+                    <label class="modal-label">Choose File</label>
+                    <input type="file" id="importColumnsFile" accept=".xlsx,.xls" onchange="loadColumnsSheets()">
+
+                    <label class="modal-label">Select Sheet</label>
+                    <select id="importColumnsSheet" disabled>
+                        <option>— load a file first —</option>
+                    </select>
+
+                    <div id="importColumnsPreview"></div>
+
+                    <div class="modal-actions">
+                        <button onclick="closeImportColumnsModal()">Cancel</button>
+                        <button id="importColumnsConfirmBtn" onclick="confirmImportColumns()" disabled>Import</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        modal.style.display = 'block';
+    },
+
+    closeImportColumnsModal: function() {
+        const modal = document.getElementById('importColumnsModal');
+        if (modal) modal.style.display = 'none';
+        const fileInput = document.getElementById('importColumnsFile');
+        if (fileInput) fileInput.value = '';
+        const sheetSelect = document.getElementById('importColumnsSheet');
+        if (sheetSelect) {
+            sheetSelect.innerHTML = '<option>— load a file first —</option>';
+            sheetSelect.disabled = true;
+        }
+        const confirmBtn = document.getElementById('importColumnsConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'Import';
+        }
+        const preview = document.getElementById('importColumnsPreview');
+        if (preview) preview.innerHTML = '';
+        this.state._importColumnsWorkbook = null;
+        this.state._columnsToImport = [];
+    },
+
+    loadColumnsSheets: function() {
+        const fileInput = document.getElementById('importColumnsFile');
+        const file = fileInput ? fileInput.files[0] : null;
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const workbook = XLSX.read(e.target.result, { type: 'array' });
+            this.state._importColumnsWorkbook = workbook;
+
+            const sheetSelect = document.getElementById('importColumnsSheet');
+            if (sheetSelect) {
+                sheetSelect.innerHTML = workbook.SheetNames.map(
+                    name => `<option value="${name}">${name}</option>`
+                ).join('');
+                sheetSelect.disabled = false;
+                sheetSelect.onchange = () => this.previewColumnsSheet();
+            }
+
+            this.previewColumnsSheet();
+        };
+        reader.readAsArrayBuffer(file);
+    },
+
+    previewColumnsSheet: function() {
+        const sheetSelect = document.getElementById('importColumnsSheet');
+        const sheetName = sheetSelect ? sheetSelect.value : '';
+        if (!sheetName || !this.state._importColumnsWorkbook) return;
+
+        const ws = this.state._importColumnsWorkbook.Sheets[sheetName];
+        const rawRows = XLSX.utils.sheet_to_json(ws, { defval: '', header: 1 });
+
+        const preview = document.getElementById('importColumnsPreview');
+        const confirmBtn = document.getElementById('importColumnsConfirmBtn');
+
+        if (!preview || !confirmBtn) return;
+
+        if (rawRows.length < 2) {
+            preview.innerHTML = '<span style="color:#ef4444;">No data found. Need at least header and one row.</span>';
             confirmBtn.disabled = true;
             return;
         }
 
-        const headerNote = hasHeader
-            ? 'Detected a header row and mapped columns by header labels.'
-            : 'No header row detected; importing rows by column order.';
+        const headers = rawRows[0].map(h => String(h).trim().toLowerCase());
+        const nameIndex = headers.findIndex(h => h.includes('name') && h.includes('column'));
+        const altNameIndex = headers.indexOf('name');
+        const finalNameIndex = nameIndex !== -1 ? nameIndex : altNameIndex;
+        const typeIndex = headers.indexOf('type');
+        const orderIndex = headers.findIndex(h => h.includes('order'));
 
+        if (finalNameIndex === -1) {
+            preview.innerHTML = '<span style="color:#ef4444;">Header must include a column with "name" (preferably "column name").</span>';
+            confirmBtn.disabled = true;
+            return;
+        }
+
+        const columnsToAdd = [];
+        for (let i = 1; i < rawRows.length; i++) {
+            const row = rawRows[i];
+            const name = String(row[finalNameIndex] || '').trim();
+            if (!name) continue;
+            const type = String(row[typeIndex] || 'text').trim().toLowerCase();
+            const validTypes = ['text', 'number', 'date'];
+            const columnType = validTypes.includes(type) ? type : 'text';
+            const order = parseInt(row[orderIndex] || 0) || 0;
+            columnsToAdd.push({ column_name: name, column_type: columnType, display_order: order });
+        }
+
+        if (!columnsToAdd.length) {
+            preview.innerHTML = '<span style="color:#ef4444;">No valid columns to add.</span>';
+            confirmBtn.disabled = true;
+            return;
+        }
+
+        // Sort by provided order, then assign sequential orders
+        columnsToAdd.sort((a, b) => a.display_order - b.display_order);
+        const currentMaxOrder = Math.max(...this.state.currentTemplate.doc_columns.map(c => c.display_order), -1);
+        columnsToAdd.forEach((col, idx) => {
+            col.display_order = currentMaxOrder + 1 + idx;
+        });
+
+        this.state._columnsToImport = columnsToAdd;
+
+        const sample = columnsToAdd.slice(0, 5).map(c => `${c.column_name} (${c.column_type})`).join(', ');
         preview.innerHTML = `
             <div style="font-size:12px;line-height:1.8;padding:10px 12px;background:#f8fafc;border-radius:7px;border:1px solid #e2e8f0;">
-                <div><strong>${previewRows.length} rows</strong> will be imported</div>
-                <div>${headerNote}</div>
-                <div>Columns saved: <span style="color:#16a34a;font-weight:600;">${cols.join(', ')}</span></div>
+                <div><strong>${columnsToAdd.length} columns</strong> will be added</div>
+                <div>Sample: ${sample}${columnsToAdd.length > 5 ? '...' : ''}</div>
             </div>
         `;
         confirmBtn.disabled = false;
     },
 
-    confirmImport: async function() {
-        const sheetName = document.getElementById('importSheet').value;
-        const ws        = this.state._importWorkbook.Sheets[sheetName];
-        const rawRows   = this.getImportRawRows(ws);
-        const cols      = this.state.currentTemplate.doc_columns.map(c => c.column_name);
-        const rows      = this.mapImportRows(rawRows, cols);
+    confirmImportColumns: async function() {
+        if (!this.state._columnsToImport || !this.state._columnsToImport.length) return;
 
-        if (!rows.length) {
-            return this.showToast('No data rows to import.', 'error');
+        const confirmBtn = document.getElementById('importColumnsConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.innerText = 'Importing...';
         }
 
-        const entries = rows.map(row => ({
-            template_id: this.state.currentTemplate.id,
-            content: Object.fromEntries(cols.map(c => [c, row[c] !== undefined ? String(row[c]) : '']))
-        }));
-
-        const confirmBtn     = document.getElementById('importConfirmBtn');
-        confirmBtn.disabled  = true;
-        confirmBtn.innerText = 'Importing...';
-
         try {
-            const batchSize = 100;
-            for (let i = 0; i < entries.length; i += batchSize) {
-                const batch = entries.slice(i, i + batchSize);
-                const { error } = await supabaseClient.from('doc_entries').insert(batch);
-                if (error) throw error;
-            }
+            const inserts = this.state._columnsToImport.map(col => ({
+                template_id: this.state.currentTemplate.id,
+                column_name: col.column_name,
+                column_type: col.column_type,
+                display_order: col.display_order
+            }));
 
-            const { data } = await supabaseClient
-                .from('doc_entries')
-                .select('*')
-                .eq('template_id', this.state.currentTemplate.id)
-                .order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient
+                .from('doc_columns')
+                .insert(inserts)
+                .select();
+            if (error) throw error;
 
-            this.state.localEntries = data || [];
-            this.state.cache[this.state.currentTemplate.name].entries = this.state.localEntries;
+            this.state.currentTemplate.doc_columns.push(...data);
+            this.state.currentTemplate.doc_columns.sort((a, b) => a.display_order - b.display_order);
+            delete this.state.cache[this.state.currentTemplate.name];
 
-            this.renderTable(this.state.localEntries);
-            this.closeImportModal();
-            this.showToast(`${entries.length} rows imported successfully!`);
-
+            this.renderAll();
+            this.closeImportColumnsModal();
+            this.showToast(`${data.length} columns added!`);
         } catch (err) {
             this.showToast('Import failed: ' + err.message, 'error');
         } finally {
-            confirmBtn.disabled  = false;
-            confirmBtn.innerText = 'Import';
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.innerText = 'Import';
+            }
         }
+    },
+
+    openColumnModal: function() {
+        document.getElementById('columnModal').style.display = 'block';
+        this.addImportColumnsButton();
     },
 
     // ============================================================
