@@ -38,10 +38,13 @@ export const AppCore = {
         window.sortByDate        = ()          => this.sortByDate();
         window.exportToExcel     = ()          => this.exportToExcel();
 
+
         window.openModal         = ()          => document.getElementById('categoryModal').style.display = 'block';
         window.closeModal        = ()          => document.getElementById('categoryModal').style.display = 'none';
         window.openColumnModal   = ()          => document.getElementById('columnModal').style.display = 'block';
         window.closeColumnModal  = ()          => document.getElementById('columnModal').style.display = 'none';
+
+        window.filterCategoryCards = () => this.filterCategoryCards();
 
         window.createNewCategory = ()          => this.createNewCategory();
         window.addColumnToActive = ()          => this.addColumnToActive();
@@ -666,10 +669,11 @@ export const AppCore = {
         this.renderCategoryCards();
     },
 
-    renderCategoryCards: function () {
+    renderCategoryCards: function (filteredTemplates) {
         const container = document.getElementById('categoryCards');
         if (!container) return;
-        container.innerHTML = this.state.allTemplates.map(t => {
+        const templates = filteredTemplates || this.state.allTemplates;
+        container.innerHTML = templates.map(t => {
             const hue   = Math.abs(t.name.split('').reduce((a, b) => (((a << 5) - a) + b.charCodeAt(0)) | 0, 0)) % 360;
             const color = `hsla(${hue}, 60%, 82%, 1)`;
             return `
@@ -684,6 +688,14 @@ export const AppCore = {
                 <span class="card-label">${t.name}</span>
             </div>`;
         }).join('');
+    },
+
+    filterCategoryCards: function () {
+        const searchInput = document.getElementById('categorySearch');
+        if (!searchInput) return;
+        const term = searchInput.value.toLowerCase();
+        const filtered = this.state.allTemplates.filter(t => t.name.toLowerCase().includes(term));
+        this.renderCategoryCards(filtered);
     },
 
     createNewCategory: async function () {

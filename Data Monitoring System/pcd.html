@@ -20,8 +20,10 @@
     </header>
 
     <!-- CATEGORY CARDS -->
+
     <h3>Select Category</h3>
     <div class="category-nav-wrapper">
+        <input type="text" id="categorySearch" placeholder="Search categories..." style="margin-bottom:10px;width:100%;padding:8px;box-sizing:border-box;" oninput="filterCategoryCards()">
         <div id="categoryCards" class="category-scroll-container"></div>
     </div>
 
